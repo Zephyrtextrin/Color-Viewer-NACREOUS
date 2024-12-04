@@ -26,6 +26,9 @@ public class Main{
         //TODO: add ability to disable field bgs
         //TODO: make the hex button work
         //TODO: add warning that hex has higher prio than RGB
+        //HEX PRIOR MESSAGE DRAFT:
+        /*Do note that the Hex value has a higher priority than the RGB values, it'll replace the RGB values when you update the color. 
+        \nTo disable this, set the Hex value to 0.*/
 
 
         //BEGIN TO INIT UI ---------------------------------------------------------------------------
