@@ -26,8 +26,6 @@ public class Main{
         } catch (Exception e) {System.out.println("error with look and feel!\n------DETAILS------\n"+e.getMessage());}
 
 
-        //TODO: make hex button have white bg when all 3 values are dark
-        //TODO: make hex's checksum less shit
         //TODO: add more comments and better organization
 
 
@@ -87,7 +85,6 @@ public class Main{
         colorPreview.setEditable(false);
         panel.add(colorPreview);
 
-
         JLabel colorLabel = new JLabel("RGB and Hex data will show up here");
         colorLabel.setBounds((int)(colorPreview.getWidth()/3.5), windowHeight-(boundingSize+boundingPos), 500, 50);
         panel.add(colorLabel);
@@ -106,7 +103,11 @@ public class Main{
 
         //runs when the randomizebutton is clicked
         randomButton.addActionListener(_ -> {
-            colorPreview.setBackground(randomizeColor());
+            Random rand = new Random();
+            RTextField.setText(String.valueOf(rand.nextInt(256)));
+            GTextField.setText(String.valueOf(rand.nextInt(256)));
+            BTextField.setText(String.valueOf(rand.nextInt(256)));
+
             updateAllFields(colorPreview, RTextField, GTextField, BTextField, hexField, panel, colorLabel);
         });
 
@@ -117,17 +118,8 @@ public class Main{
         BTextField.addActionListener(_ -> {updateAllFields(colorPreview, RTextField,GTextField,BTextField,hexField,panel,colorLabel);});
 
         hexField.addActionListener(_ -> {
-            String value = hexField.getText();
-            Color hexColor;
-            try{hexColor = Color.decode(value);}
-            catch(Exception e){
-                hexColor = Color.BLACK; //placeholder idgaf
-                value = "000000";
-            }
-            hexField.setText(value);
-            colorPreview.setBackground(hexColor);
-
-            updateAllFields(colorPreview, RTextField,GTextField,BTextField,hexField,panel,colorLabel);
+            hexChecksum(hexField);
+            updateAllFields(colorPreview, RTextField, GTextField, BTextField, hexField, panel, colorLabel);
         });
 
         //runs when the RGB button is clicked
@@ -136,7 +128,7 @@ public class Main{
         colorBGCheckbox.addActionListener(_ -> {
             coloredBGs = colorBGCheckbox.isSelected();
 
-            if(!coloredBGs) {
+            if(!coloredBGs){
                 RTextField.setBackground(Color.WHITE);
                 GTextField.setBackground(Color.WHITE);
                 BTextField.setBackground(Color.WHITE);
@@ -148,22 +140,29 @@ public class Main{
             }else{updateAllFields(colorPreview,RTextField,GTextField,BTextField,hexField,panel,colorLabel);}
         });
 
-        randomButton.addActionListener(_ -> {
-            colorPreview.setBackground(randomizeColor());
-            updateAllFields(colorPreview, RTextField, GTextField, BTextField, hexField, panel, colorLabel);
+        hexTargetCheckbox.addActionListener(_ -> {
+
         });
 
         panel.repaint();
         panel.revalidate();
     }
 
-    public static Color randomizeColor(){
-        Random rand = new Random();
-        int R = rand.nextInt(256);
-        int G = rand.nextInt(256);
-        int B = rand.nextInt(256);
-
-        return new Color(R,G,B);
+    private static void hexChecksum(JTextField hexField) {
+        String value = hexField.getText();
+        Color hexColor;
+        boolean valid = true;
+        try {hexColor = Color.decode(value);}
+        catch (Exception e) {
+            hexColor = Color.BLACK; //placeholder idgaf
+            value = "000000";
+            valid = false;
+        }
+        if(valid){
+            if(hexColor.getRed() < 134 && hexColor.getGreen() < 134 && hexColor.getBlue() < 134){hexField.setForeground(Color.WHITE);
+            }else{hexField.setForeground(Color.BLACK);}
+            hexField.setText(value);
+        }
     }
 
     private static void updateAllFields(JTextField preview, JTextField RField, JTextField GField, JTextField BField, JTextField hexField, JPanel panel, JLabel label){
@@ -171,12 +170,13 @@ public class Main{
         int G = isValidInt(GField.getText());
         int B = isValidInt(BField.getText());
         hexField.setText(String.format("#%02x%02x%02x", R, G, B).toUpperCase());
-
+        System.out.println(coloredBGs);
         preview.setBackground(new Color(R,G,B));
 
         oneFieldUpdate(new Color(R,0,0), R, RField);
         oneFieldUpdate(new Color(0,G,0), G, GField);
         oneFieldUpdate(new Color(0,0,B), B, BField);
+        hexChecksum(hexField);
         if(coloredBGs){
             BField.setForeground(Color.WHITE); //this must be called afterwards because for some reason all blue colors have terrible contrast lol
             hexField.setBackground(preview.getBackground());
@@ -192,7 +192,7 @@ public class Main{
         if(coloredBGs) {
             field.setBackground(color);
             Color textColor = Color.BLACK;
-            if (value < 117) {textColor = Color.WHITE;} //this is a function so that way the text turns white on darker backgrounds
+            if (value < 134) {textColor = Color.WHITE;} //this is a function so that way the text turns white on darker backgrounds
             field.setForeground(textColor);
         }
         field.setText(String.valueOf(value));
