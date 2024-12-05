@@ -24,11 +24,11 @@ public class Main{
         } catch (Exception e) {System.out.println("error with look and feel!\n------DETAILS------\n"+e.getMessage());}
 
 
-        //TODO: fix the spacing cause the hex is way too close to the other buttons
         //TODO: add ability to disable field color bgs
         //TODO: add ability to disable hex targeting
         //TODO: make hex button have white bg when all 3 values are dark
         //TODO: make hex's checksum less shit
+        //TODO: add more comments and better organization
 
 
         //BEGIN TO INIT UI ---------------------------------------------------------------------------
@@ -37,11 +37,6 @@ public class Main{
         final int windowHeight = INT_CONSTANTS.WINDOW_HEIGHT.value;
         final int boundingPos = INT_CONSTANTS.BOUNDING_POS.value;
         final int boundingSize = INT_CONSTANTS.BOUNDING_SIZE.value;
-
-        //put these back in place later
-        JTextField RTextField = new JTextField("R Value...");
-        JTextField GTextField = new JTextField("G Value...");
-        JTextField BTextField = new JTextField("B Value...");
 
         //Jframe (the window)
         JFrame frame = new JFrame("Color Viewer [NACREOUS] ");
@@ -55,32 +50,35 @@ public class Main{
         panel.setLayout(null);
         frame.add(panel);
 
-        //button to randomize color
-        JButton randomButton = new JButton("Randomize");
-        randomButton.setBounds(windowWidth/2, windowHeight-boundingPos*10,150,50);
-        panel.add(randomButton);
-
-        //button to randomize color
-        JButton setRGBButton = new JButton("Set Colors!");
-        setRGBButton.setBounds(windowWidth/2, windowHeight-boundingPos*15,150,50);
-        panel.add(setRGBButton);
-
         //button to set R in RGB
+        JTextField RTextField = new JTextField("R Value...");
         RTextField.setBounds(windowWidth/2, (boundingPos*5)+20,150,50);
         panel.add(RTextField);
 
         //button to set G in RGB
-        GTextField.setBounds(windowWidth/2, (boundingPos*10)+20,150,50);
+        JTextField GTextField = new JTextField("G Value...");
+        GTextField.setBounds(windowWidth/2, RTextField.getY()+320/6,150,50);
         panel.add(GTextField);
 
         //button to set B in RGB
-        BTextField.setBounds(windowWidth/2, (boundingPos*15)+20,150,50);
+        JTextField BTextField = new JTextField("B Value...");
+        BTextField.setBounds(windowWidth/2, GTextField.getY()+320/6,150,50);
         panel.add(BTextField);
 
         //button to set HEx
         JTextField hexField = new JTextField("Hex Value...");
-        hexField.setBounds(windowWidth/2, (boundingPos*20)+20,150,50);
+        hexField.setBounds(windowWidth/2, BTextField.getY()+320/6,150,50);
         panel.add(hexField);
+
+        //button to set rgb color
+        JButton setRGBButton = new JButton("Set Colors!");
+        setRGBButton.setBounds(windowWidth/2, hexField.getY()+320/6,150,50);
+        panel.add(setRGBButton);
+
+        //button to randomize color
+        JButton randomButton = new JButton("Randomize");
+        randomButton.setBounds(windowWidth/2, setRGBButton.getY()+320/6,150,50);
+        panel.add(randomButton);
 
         //the big square that shows ur color
         JTextField colorPreview = new JTextField();
@@ -89,18 +87,19 @@ public class Main{
         colorPreview.setEditable(false);
         panel.add(colorPreview);
 
+
         JLabel colorLabel = new JLabel("RGB and Hex data will show up here");
         colorLabel.setBounds((int)(colorPreview.getWidth()/3.5), windowHeight-(boundingSize+boundingPos), 500, 50);
         panel.add(colorLabel);
 
         JLabel hexWarningLabel = new JLabel("<html>The Hex value has a higher priority than RGB values.<br>It'll replace the RGB values when you update the color.</html>");
-        hexWarningLabel.setBounds((int)(windowWidth*0.75)-boundingPos*2, (boundingPos*5)+20, 500, 50);
+        hexWarningLabel.setBounds((int)(windowWidth*0.75)-boundingPos*4, RTextField.getY(), 500, 50);
         panel.add(hexWarningLabel);
 
         //runs when the randomizebutton is clicked
         randomButton.addActionListener(_ -> {
             colorPreview.setBackground(randomizeColor());
-            updateAllFields(colorPreview, RTextField, GTextField, BTextField, hexField, panel, hexWarningLabel);
+            updateAllFields(colorPreview, RTextField, GTextField, BTextField, hexField, panel, colorLabel);
         });
 
         RTextField.addActionListener(_ -> {
@@ -153,7 +152,7 @@ public class Main{
 
             colorPreview.setBackground(new Color(R,G,B));
 
-            updateAllFields(colorPreview, RTextField, GTextField, BTextField, hexField, panel, hexWarningLabel);
+            updateAllFields(colorPreview, RTextField, GTextField, BTextField, hexField, panel, colorLabel);
         });
 
         panel.repaint();
