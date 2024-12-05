@@ -1,5 +1,6 @@
 import javax.swing.*;
 import java.awt.*;
+import java.util.Objects;
 import java.util.Random;
 
 public class Main{
@@ -22,13 +23,10 @@ public class Main{
             }
         } catch (Exception e) {System.out.println("error with look and feel!\n------DETAILS------\n"+e.getMessage());}
 
+
 //TODO: fix the spacing cause the hex is way too close to the other buttons
         //TODO: add ability to disable field bgs
-        //TODO: make the hex button work
-        //TODO: add warning that hex has higher prio than RGB
-        //HEX PRIOR MESSAGE DRAFT:
-        /*Do note that the Hex value has a higher priority than the RGB values, it'll replace the RGB values when you update the color. 
-        \nTo disable this, set the Hex value to 0.*/
+        //TODO: add ability to disable hex targeting
 
 
         //BEGIN TO INIT UI ---------------------------------------------------------------------------
@@ -78,10 +76,9 @@ public class Main{
         panel.add(BTextField);
 
         //button to set HEx
-        JTextField hexButton = new JTextField("Hex Value...");
-        hexButton.setBounds(windowWidth/2, (boundingPos*20)+20,150,50);
-        panel.add(hexButton);
-
+        JTextField hexField = new JTextField("Hex Value...");
+        hexField.setBounds(windowWidth/2, (boundingPos*20)+20,150,50);
+        panel.add(hexField);
 
         //the big square that shows ur color
         JTextField colorPreview = new JTextField();
@@ -94,14 +91,45 @@ public class Main{
         colorLabel.setBounds((int)(colorPreview.getWidth()/3.5), windowHeight-(boundingSize+boundingPos), 500, 50);
         panel.add(colorLabel);
 
+        JLabel hexWarningLabel = new JLabel("<html>The Hex value has a higher priority than RGB values.<br>It'll replace the RGB values when you update the color.</html>");
+        hexWarningLabel.setBounds((int)(windowWidth*0.75)-boundingPos*2, (boundingPos*5)+20, 500, 50);
+        panel.add(hexWarningLabel);
+
         //runs when the randomizebutton is clicked
         randomButton.addActionListener(_ -> {
             colorPreview.setBackground(randomizeColor());
-            updateAllFields(colorPreview, RTextField, GTextField, BTextField, panel, colorLabel);
+            updateAllFields(colorPreview, RTextField, GTextField, BTextField, hexField, panel, hexWarningLabel);
+        });
+
+        RTextField.addActionListener(_ -> {
+            int value = isValidInt(RTextField.getText());
+            RTextField.setText(Integer.toString(value));
+            colorPreview.setBackground(new Color(value, isValidInt(GTextField.getText()), isValidInt(BTextField.getText())));
+
+            updateAllFields(colorPreview, RTextField, GTextField, BTextField, hexField, panel, colorLabel);
+        });
+
+        GTextField.addActionListener(_ -> {
+            int value = isValidInt(GTextField.getText());
+            GTextField.setText(Integer.toString(value));
+            colorPreview.setBackground(new Color(isValidInt(RTextField.getText()), value, isValidInt(BTextField.getText())));
+
+            updateAllFields(colorPreview, RTextField,GTextField,BTextField,hexField,panel,colorLabel);
+        });
+
+        BTextField.addActionListener(_ -> {
+            int value = isValidInt(BTextField.getText());
+            BTextField.setText(Integer.toString(value));
+            colorPreview.setBackground(new Color(isValidInt(RTextField.getText()), isValidInt(GTextField.getText()), value));
+
+            updateAllFields(colorPreview, RTextField,GTextField,BTextField,hexField,panel,colorLabel);
         });
 
         //runs when the RGB button is clicked
         setRGBButton.addActionListener(_ -> {
+
+            //changes rgb values to hex values if selected
+            if(!Objects.equals(hexField.getText(), "0")){} //add things later
             int R = isValidInt(RTextField.getText());
             int G = isValidInt(GTextField.getText());
             int B = isValidInt(BTextField.getText());
@@ -109,7 +137,7 @@ public class Main{
 
             colorPreview.setBackground(new Color(R,G,B));
 
-            updateAllFields(colorPreview, RTextField, GTextField, BTextField, panel, colorLabel);
+            updateAllFields(colorPreview, RTextField, GTextField, BTextField, hexField, panel, hexWarningLabel);
         });
 
         panel.repaint();
@@ -125,18 +153,20 @@ public class Main{
         return new Color(R,G,B);
     }
 
-    private static void updateAllFields(JTextField preview, JTextField RField, JTextField GField, JTextField BField, JPanel panel, JLabel label){
+    private static void updateAllFields(JTextField preview, JTextField RField, JTextField GField, JTextField BField, JTextField hexField, JPanel panel, JLabel label){
         int R = preview.getBackground().getRed();
         int G = preview.getBackground().getGreen();
         int B = preview.getBackground().getBlue();
-        String HexString = " // HEX: "+String.format("#%02x%02x%02x", R, G, B).toUpperCase();
-        String RGBString = "RGB: "+R+", "+G+", "+B;
+        hexField.setText(String.format("#%02x%02x%02x", R, G, B).toUpperCase());
+
+
         oneFieldUpdate(new Color(R,0,0), R, RField);
         oneFieldUpdate(new Color(0,G,0), G, GField);
         oneFieldUpdate(new Color(0,0,B), B, BField);
         BField.setForeground(Color.WHITE); //this must be called afterwards because for some reason all blue colors have terrible contrast lol
+        hexField.setBackground(preview.getBackground());
 
-        label.setText(RGBString+HexString);
+        label.setText("RGB: "+R+", "+G+", "+B+" // HEX: "+hexField.getText());
         panel.repaint();
         panel.revalidate();
     }
@@ -166,7 +196,7 @@ public class Main{
             else if(out<0){out = 0;}
         }
 
-        if(out == -1) {System.out.println("BRO U FUCKED UP SOMEWHERE");} //err handlr if out somehow never gets changed
+        if(out == -1) {System.out.println("BRO U FUCKED UP SOMEWHERE WITH VALIDITY CHECKS");} //err handlr if out somehow never gets changed
         return out;
     }
 }
