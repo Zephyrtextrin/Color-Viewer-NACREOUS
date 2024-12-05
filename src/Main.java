@@ -12,8 +12,8 @@ public class Main{
         INT_CONSTANTS(int type) {this.value = type;}
     }
 
-    boolean hexState;
-    static boolean coloredBGs;
+    boolean hexState = false;
+    static boolean coloredBGs = true;
     public static void main(String[] args) {
         //changes l&f to windows classic because im a basic bitch like that
         try {
@@ -90,16 +90,14 @@ public class Main{
         colorLabel.setBounds((int)(colorPreview.getWidth()/3.5), windowHeight-(boundingSize+boundingPos), 500, 50);
         panel.add(colorLabel);
 
-        JLabel hexWarningLabel = new JLabel("<html>The Hex value has a higher priority than RGB values.<br>It'll replace the RGB values when you update the color.</html>");
-        hexWarningLabel.setBounds((int)(windowWidth*0.75)-boundingPos*4, RTextField.getY(), 200, 150);
-        panel.add(hexWarningLabel);
 
         JCheckBox hexTargetCheckbox = new JCheckBox("Enable/Disable Hex overriding RGB values");
-        hexTargetCheckbox.setBounds(hexWarningLabel.getX(), hexWarningLabel.getHeight()+boundingPos*4, 500, 20);
+        hexTargetCheckbox.setBounds((int)(windowWidth*0.75)-boundingPos*4, RTextField.getY()+boundingPos*4, 500, 20);
         panel.add(hexTargetCheckbox);
 
         JCheckBox colorBGCheckbox = new JCheckBox("Enable/Disable input field colored backgrounds");
         colorBGCheckbox.setBounds(hexTargetCheckbox.getX(), hexTargetCheckbox.getY()+boundingPos*2, 500, 20);
+        colorBGCheckbox.setSelected(true);
         panel.add(colorBGCheckbox);
 
         //runs when the randomizebutton is clicked
