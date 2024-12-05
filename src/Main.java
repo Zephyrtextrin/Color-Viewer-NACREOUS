@@ -26,6 +26,7 @@ public class Main{
         } catch (Exception e) {System.out.println("error with look and feel!\n------DETAILS------\n"+e.getMessage());}
 
 
+        //TODO: make the hex ovveride functional
         //TODO: add more comments and better organization
 
 
