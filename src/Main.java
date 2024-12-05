@@ -24,9 +24,11 @@ public class Main{
         } catch (Exception e) {System.out.println("error with look and feel!\n------DETAILS------\n"+e.getMessage());}
 
 
-//TODO: fix the spacing cause the hex is way too close to the other buttons
-        //TODO: add ability to disable field bgs
+        //TODO: fix the spacing cause the hex is way too close to the other buttons
+        //TODO: add ability to disable field color bgs
         //TODO: add ability to disable hex targeting
+        //TODO: make hex button have white bg when all 3 values are dark
+        //TODO: make hex's checksum less shit
 
 
         //BEGIN TO INIT UI ---------------------------------------------------------------------------
@@ -121,6 +123,20 @@ public class Main{
             int value = isValidInt(BTextField.getText());
             BTextField.setText(Integer.toString(value));
             colorPreview.setBackground(new Color(isValidInt(RTextField.getText()), isValidInt(GTextField.getText()), value));
+
+            updateAllFields(colorPreview, RTextField,GTextField,BTextField,hexField,panel,colorLabel);
+        });
+
+        hexField.addActionListener(_ -> {
+            String value = hexField.getText();
+            Color hexColor;
+            try{hexColor = Color.decode(value);}
+            catch(Exception e){
+                hexColor = Color.BLACK; //placeholder idgaf
+                value = "000000";
+            }
+            hexField.setText(value);
+            colorPreview.setBackground(hexColor);
 
             updateAllFields(colorPreview, RTextField,GTextField,BTextField,hexField,panel,colorLabel);
         });
