@@ -1,18 +1,17 @@
 import javax.swing.*;
 import java.awt.*;
-import java.util.Objects;
 import java.util.Random;
 
 public class Main{
 
     public enum INT_CONSTANTS{
-        WINDOW_WIDTH(1200), WINDOW_HEIGHT(WINDOW_WIDTH.value/2), BOUNDING_POS(15), BOUNDING_SIZE(BOUNDING_POS.value*5);
+        WINDOW_WIDTH(1200), WINDOW_HEIGHT(WINDOW_WIDTH.value/2), BOUNDING_POS(15), BOUNDING_SIZE(BOUNDING_POS.value*5), DARK_COLOR(167);
         public final int value;
 
         INT_CONSTANTS(int type) {this.value = type;}
     }
 
-    boolean hexState = false;
+    static boolean hexState = false;
     static boolean coloredBGs = true;
     public static void main(String[] args) {
         //changes l&f to windows classic because im a basic bitch like that
@@ -25,12 +24,7 @@ public class Main{
             }
         } catch (Exception e) {System.out.println("error with look and feel!\n------DETAILS------\n"+e.getMessage());}
 
-
-        //TODO: make the hex ovveride functional
-        //TODO: add more comments and better organization
-
-
-        //BEGIN TO INIT UI ---------------------------------------------------------------------------
+        //INIT UI ELEMENTS ---------------------------------------------------------------------------
 
         final int windowWidth =INT_CONSTANTS.WINDOW_WIDTH.value;
         final int windowHeight = INT_CONSTANTS.WINDOW_HEIGHT.value;
@@ -67,6 +61,8 @@ public class Main{
         //button to set HEx
         JTextField hexField = new JTextField("Hex Value...");
         hexField.setBounds(windowWidth/2, BTextField.getY()+320/6,150,50);
+        hexField.setVisible(hexState);
+        hexField.setEnabled(hexState);
         panel.add(hexField);
 
         //button to set rgb color
@@ -90,8 +86,7 @@ public class Main{
         colorLabel.setBounds((int)(colorPreview.getWidth()/3.5), windowHeight-(boundingSize+boundingPos), 500, 50);
         panel.add(colorLabel);
 
-
-        JCheckBox hexTargetCheckbox = new JCheckBox("Enable/Disable Hex overriding RGB values");
+        JCheckBox hexTargetCheckbox = new JCheckBox("Enable/Disable Hex Input (Overrides RGB Values)");
         hexTargetCheckbox.setBounds((int)(windowWidth*0.75)-boundingPos*4, RTextField.getY()+boundingPos*4, 500, 20);
         panel.add(hexTargetCheckbox);
 
@@ -100,22 +95,30 @@ public class Main{
         colorBGCheckbox.setSelected(true);
         panel.add(colorBGCheckbox);
 
+        //ACTION LISTENERS-----------------------------
+
+
         //runs when the randomizebutton is clicked
         randomButton.addActionListener(_ -> {
             Random rand = new Random();
             RTextField.setText(String.valueOf(rand.nextInt(256)));
             GTextField.setText(String.valueOf(rand.nextInt(256)));
             BTextField.setText(String.valueOf(rand.nextInt(256)));
+            hexField.setText(String.format("#%02x%02x%02x", Integer.parseInt(RTextField.getText()), Integer.parseInt(GTextField.getText()), Integer.parseInt(BTextField.getText())).toUpperCase());
 
             updateAllFields(colorPreview, RTextField, GTextField, BTextField, hexField, panel, colorLabel);
         });
 
+        //update for rfield
         RTextField.addActionListener(_ -> {updateAllFields(colorPreview, RTextField, GTextField, BTextField, hexField, panel, colorLabel);});
 
+        //update for gfield
         GTextField.addActionListener(_ -> {updateAllFields(colorPreview, RTextField,GTextField,BTextField,hexField,panel,colorLabel);});
 
+        //update for bfield
         BTextField.addActionListener(_ -> {updateAllFields(colorPreview, RTextField,GTextField,BTextField,hexField,panel,colorLabel);});
 
+        //update for hexfield
         hexField.addActionListener(_ -> {
             hexChecksum(hexField);
             updateAllFields(colorPreview, RTextField, GTextField, BTextField, hexField, panel, colorLabel);
@@ -124,23 +127,25 @@ public class Main{
         //runs when the RGB button is clicked
         setRGBButton.addActionListener(_ -> {updateAllFields(colorPreview, RTextField, GTextField, BTextField, hexField, panel, colorLabel);});
 
+        //runs when checkbox for color bgs is clicked
         colorBGCheckbox.addActionListener(_ -> {
             coloredBGs = colorBGCheckbox.isSelected();
 
             if(!coloredBGs){
-                RTextField.setBackground(Color.WHITE);
-                GTextField.setBackground(Color.WHITE);
-                BTextField.setBackground(Color.WHITE);
-                hexField.setBackground(Color.WHITE);
-                RTextField.setForeground(Color.BLACK);
-                GTextField.setForeground(Color.BLACK);
-                BTextField.setForeground(Color.BLACK);
-                hexField.setForeground(Color.BLACK);
+                oneFieldUpdate(Color.WHITE, 255, RTextField);
+                oneFieldUpdate(Color.WHITE, 255, GTextField);
+                oneFieldUpdate(Color.WHITE, 255, BTextField);
             }else{updateAllFields(colorPreview,RTextField,GTextField,BTextField,hexField,panel,colorLabel);}
         });
 
+        //runs when checkbox for hex override is clicked
         hexTargetCheckbox.addActionListener(_ -> {
+            hexState = hexTargetCheckbox.isSelected();
+            hexField.setVisible(hexState);
+            hexField.setEnabled(hexState);
 
+            panel.repaint();
+            panel.revalidate();
         });
 
         panel.repaint();
@@ -154,28 +159,41 @@ public class Main{
         try {hexColor = Color.decode(value);}
         catch (Exception e) {
             hexColor = Color.BLACK; //placeholder idgaf
-            value = "000000";
+            value = "#000000";
             valid = false;
         }
         if(valid){
-            if(hexColor.getRed() < 134 && hexColor.getGreen() < 134 && hexColor.getBlue() < 134){hexField.setForeground(Color.WHITE);
+            final boolean darkColor = hexColor.getRed()<INT_CONSTANTS.DARK_COLOR.value&&hexColor.getGreen()<INT_CONSTANTS.DARK_COLOR.value&&hexColor.getBlue()<INT_CONSTANTS.DARK_COLOR.value;
+            if(darkColor){hexField.setForeground(Color.WHITE);
             }else{hexField.setForeground(Color.BLACK);}
             hexField.setText(value);
         }
     }
 
     private static void updateAllFields(JTextField preview, JTextField RField, JTextField GField, JTextField BField, JTextField hexField, JPanel panel, JLabel label){
-        int R = isValidInt(RField.getText());
-        int G = isValidInt(GField.getText());
-        int B = isValidInt(BField.getText());
-        hexField.setText(String.format("#%02x%02x%02x", R, G, B).toUpperCase());
-        System.out.println(coloredBGs);
+        int R;
+        int G;
+        int B;
+        hexChecksum(hexField);
+
+        if(!hexState) {
+            R = isValidInt(RField.getText());
+            G = isValidInt(GField.getText());
+            B = isValidInt(BField.getText());
+            hexField.setText(String.format("#%02x%02x%02x", R, G, B).toUpperCase());
+        }else{
+            Color color = Color.decode(hexField.getText());
+            R = color.getRed();
+            G = color.getGreen();
+            B = color.getBlue();
+        }
+
         preview.setBackground(new Color(R,G,B));
 
         oneFieldUpdate(new Color(R,0,0), R, RField);
         oneFieldUpdate(new Color(0,G,0), G, GField);
         oneFieldUpdate(new Color(0,0,B), B, BField);
-        hexChecksum(hexField);
+
         if(coloredBGs){
             BField.setForeground(Color.WHITE); //this must be called afterwards because for some reason all blue colors have terrible contrast lol
             hexField.setBackground(preview.getBackground());
@@ -190,9 +208,7 @@ public class Main{
 
         if(coloredBGs) {
             field.setBackground(color);
-            Color textColor = Color.BLACK;
-            if (value < 134) {textColor = Color.WHITE;} //this is a function so that way the text turns white on darker backgrounds
-            field.setForeground(textColor);
+            field.setForeground(isDarkColor(color));
         }
         field.setText(String.valueOf(value));
     }
@@ -213,7 +229,17 @@ public class Main{
             else if(out<0){out = 0;}
         }
 
-        if(out == -1) {System.out.println("BRO U FUCKED UP SOMEWHERE WITH VALIDITY CHECKS");} //err handlr if out somehow never gets changed
+        if(out==-1) {System.out.println("BRO U FUCKED UP SOMEWHERE WITH VALIDITY CHECKS");} //err handlr if out somehow never gets changed
         return out;
+    }
+
+    private static Color isDarkColor(Color color){
+        int R = color.getRed();
+        int G = color.getGreen();
+        int B = color.getBlue();
+        int darkThreshold = INT_CONSTANTS.DARK_COLOR.value;
+
+        if(R<darkThreshold&&G<darkThreshold&&B<darkThreshold){return Color.WHITE;
+        }else{return Color.BLACK;}
     }
 }
