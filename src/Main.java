@@ -204,14 +204,15 @@ public class Main{
         panel.revalidate();
     }
 
-    private static void oneFieldUpdate(Color color, int value, JTextField field){
+    private static void oneFieldUpdate(Color color, int value, JTextField field) {
 
-        if(coloredBGs) {
+        if (coloredBGs) {
             field.setBackground(color);
             field.setForeground(isDarkColor(color));
         }
         field.setText(String.valueOf(value));
     }
+
 
     //used to make sure the user did not input any words or negatives into the RGB input | returns -1 if invalid
     private static int isValidInt(String input){
