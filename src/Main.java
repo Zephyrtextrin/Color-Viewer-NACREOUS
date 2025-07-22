@@ -1,20 +1,29 @@
 import javax.swing.*;
 import java.awt.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Objects;
 import java.util.Random;
 
-public class Main{
+public class Main {
 
-    public enum INT_CONSTANTS{
-        WINDOW_WIDTH(1200), WINDOW_HEIGHT(WINDOW_WIDTH.value/2), BOUNDING_POS(15), BOUNDING_SIZE(BOUNDING_POS.value*5), DARK_COLOR(167);
+    public enum INT_CONSTANTS {
+        WINDOW_WIDTH(1200), WINDOW_HEIGHT(WINDOW_WIDTH.value / 2), DARK_COLOR(167);
         public final int value;
 
-        INT_CONSTANTS(int type) {this.value = type;}
+        INT_CONSTANTS(int type) {
+            this.value = type;
+        }
     }
 
-    static boolean hexState = false;
-    static boolean coloredBGs = true;
+    public enum COLORS {
+        RED, GREEN, BLUE, HEX
+    }
+
+    static boolean hexState = false; //is user in hex mode instead of rgb
+    static boolean coloredBGs = true; //colored bgs for rgb/hex vals
+
     public static void main(String[] args) {
-        //changes l&f to windows classic because im a basic bitch like that
         try {
             for (UIManager.LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
                 if ("Windows Classic".equals(info.getName())) {
@@ -22,127 +31,84 @@ public class Main{
                     break;
                 }
             }
-        } catch (Exception e) {System.out.println("error with look and feel!\n------DETAILS------\n"+e.getMessage());}
+        } catch (Exception e) {
+            System.out.println("[Error with look and feel!]\n------DETAILS------\n" + e.getMessage());
+        }
 
         //INIT UI ELEMENTS ---------------------------------------------------------------------------
 
-        final int windowWidth =INT_CONSTANTS.WINDOW_WIDTH.value;
-        final int windowHeight = INT_CONSTANTS.WINDOW_HEIGHT.value;
-        final int boundingPos = INT_CONSTANTS.BOUNDING_POS.value;
-        final int boundingSize = INT_CONSTANTS.BOUNDING_SIZE.value;
 
-        //Jframe (the window)
+        //this ui is a little better but i shouldnt rely on magic nums for the x/y
         JFrame frame = new JFrame("Color Viewer [NACREOUS] ");
         frame.setSize(INT_CONSTANTS.WINDOW_WIDTH.value, INT_CONSTANTS.WINDOW_HEIGHT.value);
         frame.setResizable(false);
         frame.setVisible(true);
 
-        //Jpanel (the panel that all elements are appended to)
-        JPanel panel = new JPanel();
-        panel.setBounds(0, 0, frame.getWidth(), frame.getHeight());
-        panel.setLayout(null);
+        MainPanel panel = new MainPanel();
+        panel.setLayout(new GridBagLayout());
         frame.add(panel);
 
-        //button to set R in RGB
-        JTextField RTextField = new JTextField("R Value...");
-        RTextField.setBounds(windowWidth/2, (boundingPos*5)+20,150,50);
-        panel.add(RTextField);
 
-        //button to set G in RGB
-        JTextField GTextField = new JTextField("G Value...");
-        GTextField.setBounds(windowWidth/2, RTextField.getY()+320/6,150,50);
-        panel.add(GTextField);
+        //make this flow better
 
-        //button to set B in RGB
-        JTextField BTextField = new JTextField("B Value...");
-        BTextField.setBounds(windowWidth/2, GTextField.getY()+320/6,150,50);
-        panel.add(BTextField);
+        //first col
+        ColorPreview colorPreview = new ColorPreview("Color");
+        new Column(new Component[]{
+                colorPreview,
+                new JLabel("Preview")
+        });
 
-        //button to set HEx
-        JTextField hexField = new JTextField("Hex Value...");
-        hexField.setBounds(windowWidth/2, BTextField.getY()+320/6,150,50);
-        hexField.setVisible(hexState);
-        hexField.setEnabled(hexState);
-        panel.add(hexField);
+        new Column(new Component[]{
+                //user inputs for respective RGB values and hex
+                new InputField(COLORS.RED),
+                new InputField(COLORS.GREEN),
+                new InputField(COLORS.BLUE),
+                new InputField(COLORS.HEX),
+                //buttons
+                new JButton("Set Colors"),
+                new JButton("Randomize")
+        });
 
-        //button to set rgb color
-        JButton setRGBButton = new JButton("Set Colors!");
-        setRGBButton.setBounds(windowWidth/2, hexField.getY()+320/6,150,50);
-        panel.add(setRGBButton);
-
-        //button to randomize color
-        JButton randomButton = new JButton("Randomize");
-        randomButton.setBounds(windowWidth/2, setRGBButton.getY()+320/6,150,50);
-        panel.add(randomButton);
-
-        //the big square that shows ur color
-        JTextField colorPreview = new JTextField();
-        colorPreview.setBounds(boundingPos, boundingPos, windowWidth/3, windowHeight-(boundingSize+boundingPos));
-        colorPreview.setBackground(new Color(0,0,0));
-        colorPreview.setEditable(false);
-        panel.add(colorPreview);
-
-        JLabel colorLabel = new JLabel("RGB and Hex data will show up here");
-        colorLabel.setBounds((int)(colorPreview.getWidth()/3.5), windowHeight-(boundingSize+boundingPos), 500, 50);
-        panel.add(colorLabel);
-
-        JCheckBox hexTargetCheckbox = new JCheckBox("Enable/Disable Hex Input (Overrides RGB Values)");
-        hexTargetCheckbox.setBounds((int)(windowWidth*0.75)-boundingPos*4, RTextField.getY()+boundingPos*4, 500, 20);
-        panel.add(hexTargetCheckbox);
-
-        JCheckBox colorBGCheckbox = new JCheckBox("Enable/Disable input field colored backgrounds");
-        colorBGCheckbox.setBounds(hexTargetCheckbox.getX(), hexTargetCheckbox.getY()+boundingPos*2, 500, 20);
-        colorBGCheckbox.setSelected(true);
-        panel.add(colorBGCheckbox);
+        //third col
+        new Column(new Component[]{
+                new JCheckBox("Enable Hex Input"),
+                new JCheckBox("Enable Colored BGs")
+        });
+        panel.addAllItems(new Column.AllColumns());
 
         //ACTION LISTENERS-----------------------------
 
 
         //runs when the randomizebutton is clicked
-        randomButton.addActionListener(_ -> {
+        Objects.requireNonNull(Column.AllColumns.getButton("Randomize")).addActionListener(_ -> {
             Random rand = new Random();
-            RTextField.setText(String.valueOf(rand.nextInt(256)));
-            GTextField.setText(String.valueOf(rand.nextInt(256)));
-            BTextField.setText(String.valueOf(rand.nextInt(256)));
-            hexField.setText(String.format("#%02x%02x%02x", Integer.parseInt(RTextField.getText()), Integer.parseInt(GTextField.getText()), Integer.parseInt(BTextField.getText())).toUpperCase());
+            ((InputField)Objects.requireNonNull(Column.AllColumns.getTextField("R Value"))).setBG(rand.nextInt(256));
+            ((InputField)Objects.requireNonNull(Column.AllColumns.getTextField("G Value"))).setBG(rand.nextInt(256));
+            ((InputField)Objects.requireNonNull(Column.AllColumns.getTextField("B Value"))).setBG(rand.nextInt(256));
+            //hexField.setText(String.format("#%02x%02x%02x", Integer.parseInt(RTextField.getText()), Integer.parseInt(GTextField.getText()), Integer.parseInt(BTextField.getText())).toUpperCase());
 
-            updateAllFields(colorPreview, RTextField, GTextField, BTextField, hexField, panel, colorLabel);
-        });
-
-        //update for rfield
-        RTextField.addActionListener(_ -> {updateAllFields(colorPreview, RTextField, GTextField, BTextField, hexField, panel, colorLabel);});
-
-        //update for gfield
-        GTextField.addActionListener(_ -> {updateAllFields(colorPreview, RTextField,GTextField,BTextField,hexField,panel,colorLabel);});
-
-        //update for bfield
-        BTextField.addActionListener(_ -> {updateAllFields(colorPreview, RTextField,GTextField,BTextField,hexField,panel,colorLabel);});
-
-        //update for hexfield
-        hexField.addActionListener(_ -> {
-            hexChecksum(hexField);
-            updateAllFields(colorPreview, RTextField, GTextField, BTextField, hexField, panel, colorLabel);
+            updateAllFields(panel);
         });
 
         //runs when the RGB button is clicked
-        setRGBButton.addActionListener(_ -> {updateAllFields(colorPreview, RTextField, GTextField, BTextField, hexField, panel, colorLabel);});
+        Objects.requireNonNull(Column.AllColumns.getButton("Set Colors")).addActionListener(_ -> updateAllFields(panel));
 
         //runs when checkbox for color bgs is clicked
-        colorBGCheckbox.addActionListener(_ -> {
-            coloredBGs = colorBGCheckbox.isSelected();
+        Objects.requireNonNull(Column.AllColumns.getCheckBox("Enable Colored BGs")).addActionListener(_ -> {
+            coloredBGs = Objects.requireNonNull(Column.AllColumns.getCheckBox("Enable Colored BGs")).isSelected();
 
             if(!coloredBGs){
-                oneFieldUpdate(Color.WHITE, 255, RTextField);
-                oneFieldUpdate(Color.WHITE, 255, GTextField);
-                oneFieldUpdate(Color.WHITE, 255, BTextField);
-            }else{updateAllFields(colorPreview,RTextField,GTextField,BTextField,hexField,panel,colorLabel);}
+                oneFieldUpdate(Color.WHITE, 255, Objects.requireNonNull(Column.AllColumns.getTextField("R Value")));
+                oneFieldUpdate(Color.WHITE, 255, Objects.requireNonNull(Column.AllColumns.getTextField("G Value")));
+                oneFieldUpdate(Color.WHITE, 255, Objects.requireNonNull(Column.AllColumns.getTextField("B Value")));
+            }else{updateAllFields(panel);}
         });
 
         //runs when checkbox for hex override is clicked
-        hexTargetCheckbox.addActionListener(_ -> {
-            hexState = hexTargetCheckbox.isSelected();
-            hexField.setVisible(hexState);
-            hexField.setEnabled(hexState);
+        Objects.requireNonNull(Column.AllColumns.getCheckBox("EnableHexInput")).addActionListener(_ -> {
+            hexState = Objects.requireNonNull(Column.AllColumns.getCheckBox("EnableHexInput")).isSelected();
+            Objects.requireNonNull(Column.AllColumns.getTextField("HValue")).setVisible(hexState);
+            Objects.requireNonNull(Column.AllColumns.getTextField("HValue")).setEnabled(hexState);
 
             panel.repaint();
             panel.revalidate();
@@ -170,15 +136,25 @@ public class Main{
         }
     }
 
-    private static void updateAllFields(JTextField preview, JTextField RField, JTextField GField, JTextField BField, JTextField hexField, JPanel panel, JLabel label){
+    private static void updateAllFields(JPanel panel){
+        final JTextField preview = Column.AllColumns.getTextField("Color");
+        final JLabel label = Column.AllColumns.getLabel("Preview");
+        final InputField RField = (InputField)Column.AllColumns.getTextField("RValue");
+        final InputField GField = (InputField)Column.AllColumns.getTextField("GValue");
+        final InputField BField = (InputField)Column.AllColumns.getTextField("BValue");
+        final InputField hexField = (InputField)Column.AllColumns.getTextField("HValue");
         int R;
         int G;
         int B;
+        assert hexField != null;
         hexChecksum(hexField);
 
         if(!hexState) {
+            assert RField != null;
             R = isValidInt(RField.getText());
+            assert GField != null;
             G = isValidInt(GField.getText());
+            assert BField != null;
             B = isValidInt(BField.getText());
             hexField.setText(String.format("#%02x%02x%02x", R, G, B).toUpperCase());
         }else{
@@ -188,6 +164,7 @@ public class Main{
             B = color.getBlue();
         }
 
+        assert preview != null;
         preview.setBackground(new Color(R,G,B));
 
         oneFieldUpdate(new Color(R,0,0), R, RField);
@@ -195,10 +172,12 @@ public class Main{
         oneFieldUpdate(new Color(0,0,B), B, BField);
 
         if(coloredBGs){
+            assert BField != null;
             BField.setForeground(Color.WHITE); //this must be called afterwards because for some reason all blue colors have terrible contrast lol
             hexField.setBackground(preview.getBackground());
         }
 
+        assert label != null;
         label.setText("RGB: "+R+", "+G+", "+B+" // HEX: "+hexField.getText());
         panel.repaint();
         panel.revalidate();
@@ -230,7 +209,6 @@ public class Main{
             else if(out<0){out = 0;}
         }
 
-        if(out==-1) {System.out.println("BRO U FUCKED UP SOMEWHERE WITH VALIDITY CHECKS");} //err handlr if out somehow never gets changed
         return out;
     }
 
@@ -242,5 +220,144 @@ public class Main{
 
         if(R<darkThreshold&&G<darkThreshold&&B<darkThreshold){return Color.WHITE;
         }else{return Color.BLACK;}
+    }
+
+    private static class MainPanel extends JPanel {
+        final GridBagConstraints constraints = new GridBagConstraints();
+
+
+        private MainPanel() {
+            this.setLayout(new GridBagLayout());
+            constraints.anchor = GridBagConstraints.LINE_START;
+            constraints.gridx = 0;
+            constraints.gridy = 0;
+            constraints.weightx = 0.5;
+        }
+
+        private void addObject(Component component, int X, int Y) {
+
+            constraints.fill = GridBagConstraints.HORIZONTAL;
+            component.setSize(new Dimension(500, 500));
+            constraints.gridx = X;
+            constraints.gridy = Y;
+            this.add(component, constraints);
+
+            this.repaint();
+            this.revalidate();
+        }
+
+        public void addAllItems(Column.AllColumns allItems){
+            int X = 0;
+            int Y = 0;
+            for(Column col:allItems){
+                for(Component component:col){
+                    this.addObject(component,X,Y);
+                    Y++;
+                }
+                Y = 0;
+                X++;
+            }
+
+        }
+    }
+
+    private static class ColorPreview extends JTextField {
+        private ColorPreview(String name) {
+            this.setText(name);
+            this.setBackground(new Color(0, 0, 0));
+            this.setEditable(false);
+        }
+    }
+
+    private static class InputField extends JTextField {
+        COLORS COLOR_TYPE;
+
+        private InputField(COLORS type) {
+            COLOR_TYPE = type;
+            this.setText(COLOR_TYPE.toString().charAt(0) + " Value");
+
+            if (COLOR_TYPE == COLORS.HEX) {
+                this.setVisible(hexState);
+                this.setEnabled(hexState);
+            }
+        }
+
+        private void setBG(int value) {
+            this.setText(String.valueOf(value));
+            Color color = switch (COLOR_TYPE) {
+                case RED -> new Color(value, 0, 0);
+                case GREEN -> new Color(0, value, 0);
+                case BLUE -> new Color(0, 0, value);
+                case HEX -> new Color(value, value, value); //placeholder
+            };
+
+            this.setForeground(isDarkColor(color));
+        }
+    }
+
+    private static class Column extends ArrayList<Component>{
+        private static final ArrayList<Column> columnList = new ArrayList<>();
+
+
+        private Column(Component[] items) {
+            this.addAll(Arrays.asList(items));
+            columnList.add(this);
+        }
+
+        private static class AllColumns extends ArrayList<Column>{
+            private static final ArrayList<JButton> buttons = new ArrayList<>();
+            private static final ArrayList<JTextField> fields = new ArrayList<>();
+            private static final ArrayList<JLabel> labels = new ArrayList<>();
+            private static final ArrayList<JCheckBox> checks = new ArrayList<>();
+
+            private void sortAllItems(){
+                for(Column col:this){
+                    for(Component com:col){
+                        if(com instanceof JButton){buttons.add((JButton) com);}
+                        else if(com instanceof JTextField){fields.add((JTextField) com);}
+                        else if(com instanceof JLabel){labels.add((JLabel) com);}
+                        else if(com instanceof JCheckBox){checks.add((JCheckBox) com);}
+                    }
+                }
+            }
+
+            private AllColumns(){
+                this.addAll(columnList);
+                this.sortAllItems();
+            }
+
+            public static JLabel getLabel(String name){
+                for(JLabel label:labels){
+                    if(label.getText().equals(name))
+                        return label;
+                }
+                return null;
+            }
+
+            public static JTextField getTextField(String name){
+                for(JTextField field:fields){
+                    if(field.getText().equals(name))
+                        return field;
+                }
+                return null;
+            }
+
+            public static JButton getButton(String name){
+                for(JButton button:buttons){
+                    if(button.getText().equals(name))
+                        return button;
+                }
+                return null;
+            }
+
+            public static JCheckBox getCheckBox(String name){
+                for(JCheckBox check:checks){
+                    if(check.getText().equals(name))
+                        return check;
+                }
+                return null;
+            }
+
+        }
     }
 }
