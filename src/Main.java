@@ -85,44 +85,49 @@ public class Main {
 
         ((JButton) allItems.getItem(UI_OBJECTS.RANDOMIZE_BUTTON)).addActionListener(_ -> {
             Random rand = new Random();
-            ((InputField) allItems.getItem(UI_OBJECTS.RED_INPUT)).update(rand.nextInt(256));
-            ((InputField) allItems.getItem(UI_OBJECTS.GREEN_INPUT)).update(rand.nextInt(256));
-            ((InputField) allItems.getItem(UI_OBJECTS.BLUE_INPUT)).update(rand.nextInt(256));
+            ((InputField) allItems.getItem(UI_OBJECTS.RED_INPUT)).setText(String.valueOf(rand.nextInt(256)));
+            ((InputField) allItems.getItem(UI_OBJECTS.GREEN_INPUT)).setText(String.valueOf(rand.nextInt(256)));
+            ((InputField) allItems.getItem(UI_OBJECTS.BLUE_INPUT)).setText(String.valueOf(rand.nextInt(256)));
 
-            ((ColorPreview)allItems.getItem(UI_OBJECTS.COLOR_PREVIEW_BOX)).setColor();
-            ((JLabel)allItems.getItem(UI_OBJECTS.COLOR_PREVIEW_TEXT)).setText("Color: "+InputField.getFullColor());
+            refresh(allItems);
 
         });
 
-        //runs when checkbox for color bgs is clicked
-        ((JCheckBox) allItems.getItem(UI_OBJECTS.COLORED_BGS_CHECKBOX)).addActionListener(_ -> {
-            coloredBGs = ((JCheckBox) allItems.getItem(UI_OBJECTS.COLORED_BGS_CHECKBOX)).isSelected();
+        ((JCheckBox)allItems.getItem(UI_OBJECTS.COLORED_BGS_CHECKBOX)).addActionListener(_ -> refresh(allItems));
 
-            if (!coloredBGs) {
-                allItems.getItem(UI_OBJECTS.RED_INPUT).setBackground(Color.WHITE);
-                allItems.getItem(UI_OBJECTS.BLUE_INPUT).setBackground(Color.WHITE);
-                allItems.getItem(UI_OBJECTS.GREEN_INPUT).setBackground(Color.WHITE);
-                allItems.getItem(UI_OBJECTS.RED_INPUT).setForeground(Color.BLACK);
-                allItems.getItem(UI_OBJECTS.GREEN_INPUT).setForeground(Color.BLACK);
-                allItems.getItem(UI_OBJECTS.BLUE_INPUT).setForeground(Color.BLACK);
-            } else {
-                ((InputField)allItems.getItem(UI_OBJECTS.RED_INPUT)).update();
-                ((InputField)allItems.getItem(UI_OBJECTS.GREEN_INPUT)).update();
-                ((InputField)allItems.getItem(UI_OBJECTS.BLUE_INPUT)).update();
-            }
-        });
+        ((InputField)allItems.getItem(UI_OBJECTS.RED_INPUT)).addActionListener(_->refresh(allItems));
+        ((InputField)allItems.getItem(UI_OBJECTS.GREEN_INPUT)).addActionListener(_->refresh(allItems));
+        ((InputField)allItems.getItem(UI_OBJECTS.BLUE_INPUT)).addActionListener(_->refresh(allItems));
+        ((JButton)allItems.getItem(UI_OBJECTS.SET_COLORS_BUTTON)).addActionListener(_->refresh(allItems));
+
+
 
         panel.repaint();
         panel.revalidate();
-
-        ((InputField)allItems.getItem(UI_OBJECTS.RED_INPUT)).addActionListener(_->{
-            ((InputField)allItems.getItem(UI_OBJECTS.RED_INPUT)).update();
-            ((ColorPreview)allItems.getItem(UI_OBJECTS.COLOR_PREVIEW_BOX)).setColor();
-        });
     }
 
     //used to make sure the user did not input any words or negatives into the RGB input
 
+    private static void refresh(Column.AllColumns allItems){
+        final boolean coloredBGs = ((JCheckBox)allItems.getItem(UI_OBJECTS.COLORED_BGS_CHECKBOX)).isSelected();
+
+        if(!coloredBGs){
+            allItems.getItem(UI_OBJECTS.RED_INPUT).setBackground(Color.WHITE);
+            allItems.getItem(UI_OBJECTS.BLUE_INPUT).setBackground(Color.WHITE);
+            allItems.getItem(UI_OBJECTS.GREEN_INPUT).setBackground(Color.WHITE);
+            allItems.getItem(UI_OBJECTS.RED_INPUT).setForeground(Color.BLACK);
+            allItems.getItem(UI_OBJECTS.GREEN_INPUT).setForeground(Color.BLACK);
+            allItems.getItem(UI_OBJECTS.BLUE_INPUT).setForeground(Color.BLACK);
+        }else{
+            ((InputField)allItems.getItem(UI_OBJECTS.RED_INPUT)).update();
+            ((InputField)allItems.getItem(UI_OBJECTS.GREEN_INPUT)).update();
+            ((InputField)allItems.getItem(UI_OBJECTS.BLUE_INPUT)).update();
+        }
+
+        ((ColorPreview)allItems.getItem(UI_OBJECTS.COLOR_PREVIEW_BOX)).setColor();
+        ((JLabel)allItems.getItem(UI_OBJECTS.COLOR_PREVIEW_TEXT)).setText("Color: "+InputField.getFullColor());
+
+    }
 
     private static int intCheck(String input) {
         boolean valid = true;
