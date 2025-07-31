@@ -26,7 +26,6 @@ public class Main {
         HEX_INPUT,
         RANDOMIZE_BUTTON,
         SET_COLORS_BUTTON,
-        HEX_CHECKBOX,
         COLORED_BGS_CHECKBOX
     }
 
