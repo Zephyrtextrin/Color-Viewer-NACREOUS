@@ -78,28 +78,27 @@ public class Main {
         column3.put(UI_OBJECTS.COLORED_BGS_CHECKBOX, new JCheckBox("Enable/Disabled colored backgrounds"));
 
 
-        Column.AllColumns allItems = new Column.AllColumns(panel);
+        final Column.AllColumns allItems = new Column.AllColumns(panel);
+        final Collection<InputField> fields = InputField.getAllFields().values();
         //ACTION LISTENERS-----------------------------
 
 
         ((JButton) Objects.requireNonNull(allItems.getItem(UI_OBJECTS.RANDOMIZE_BUTTON))).addActionListener(_ -> {
-            Random rand = new Random();
-            ((InputField) Objects.requireNonNull(allItems.getItem(UI_OBJECTS.RED_INPUT))).setText(String.valueOf(rand.nextInt(256)));
-            ((InputField) Objects.requireNonNull(allItems.getItem(UI_OBJECTS.GREEN_INPUT))).setText(String.valueOf(rand.nextInt(256)));
-            ((InputField) Objects.requireNonNull(allItems.getItem(UI_OBJECTS.BLUE_INPUT))).setText(String.valueOf(rand.nextInt(256)));
+            final Random rand = new Random();
+            for(InputField currentField:fields){
+                currentField.setText(String.valueOf(rand.nextInt(256)));
+            }
 
             refresh(allItems);
 
         });
 
-        ((JCheckBox) Objects.requireNonNull(allItems.getItem(UI_OBJECTS.COLORED_BGS_CHECKBOX))).addActionListener(_ -> refresh(allItems));
+        for(InputField currentField:fields){
+            currentField.addActionListener(_->refresh(allItems));
+        }
 
-        ((InputField) Objects.requireNonNull(allItems.getItem(UI_OBJECTS.RED_INPUT))).addActionListener(_->refresh(allItems));
-        ((InputField) Objects.requireNonNull(allItems.getItem(UI_OBJECTS.GREEN_INPUT))).addActionListener(_->refresh(allItems));
-        ((InputField) Objects.requireNonNull(allItems.getItem(UI_OBJECTS.BLUE_INPUT))).addActionListener(_->refresh(allItems));
-        ((JButton) Objects.requireNonNull(allItems.getItem(UI_OBJECTS.SET_COLORS_BUTTON))).addActionListener(_->refresh(allItems));
-
-
+        ((JButton)Objects.requireNonNull(allItems.getItem(UI_OBJECTS.SET_COLORS_BUTTON))).addActionListener(_->refresh(allItems));
+        ((JCheckBox)Objects.requireNonNull(allItems.getItem(UI_OBJECTS.COLORED_BGS_CHECKBOX))).addActionListener(_ -> refresh(allItems));
 
         panel.repaint();
         panel.revalidate();
@@ -108,23 +107,20 @@ public class Main {
     //used to make sure the user did not input any words or negatives into the RGB input
 
     private static void refresh(Column.AllColumns allItems){
-        final boolean coloredBGs = ((JCheckBox) Objects.requireNonNull(allItems.getItem(UI_OBJECTS.COLORED_BGS_CHECKBOX))).isSelected();
+        final boolean coloredBGs = ((JCheckBox)Objects.requireNonNull(allItems.getItem(UI_OBJECTS.COLORED_BGS_CHECKBOX))).isSelected();
+        final Collection<InputField> fields = InputField.getAllFields().values();
 
         if(!coloredBGs){
-            Objects.requireNonNull(allItems.getItem(UI_OBJECTS.RED_INPUT)).setBackground(Color.WHITE);
-            Objects.requireNonNull(allItems.getItem(UI_OBJECTS.BLUE_INPUT)).setBackground(Color.WHITE);
-            Objects.requireNonNull(allItems.getItem(UI_OBJECTS.GREEN_INPUT)).setBackground(Color.WHITE);
-            Objects.requireNonNull(allItems.getItem(UI_OBJECTS.RED_INPUT)).setForeground(Color.BLACK);
-            Objects.requireNonNull(allItems.getItem(UI_OBJECTS.GREEN_INPUT)).setForeground(Color.BLACK);
-            Objects.requireNonNull(allItems.getItem(UI_OBJECTS.BLUE_INPUT)).setForeground(Color.BLACK);
+            for(InputField currentField:fields){
+                currentField.setBackground(Color.WHITE);
+                currentField.setForeground(Color.BLACK);
+            }
         }else{
-            ((InputField) Objects.requireNonNull(allItems.getItem(UI_OBJECTS.RED_INPUT))).update();
-            ((InputField) Objects.requireNonNull(allItems.getItem(UI_OBJECTS.GREEN_INPUT))).update();
-            ((InputField) Objects.requireNonNull(allItems.getItem(UI_OBJECTS.BLUE_INPUT))).update();
+            for(InputField currentField:fields){currentField.update();}
         }
 
-        ((ColorPreview) Objects.requireNonNull(allItems.getItem(UI_OBJECTS.COLOR_PREVIEW_BOX))).setColor();
-        ((JLabel) Objects.requireNonNull(allItems.getItem(UI_OBJECTS.COLOR_PREVIEW_TEXT))).setText("Color: "+InputField.getFullColor());
+        ((ColorPreview)Objects.requireNonNull(allItems.getItem(UI_OBJECTS.COLOR_PREVIEW_BOX))).setColor();
+        ((JLabel)Objects.requireNonNull(allItems.getItem(UI_OBJECTS.COLOR_PREVIEW_TEXT))).setText("Color: "+InputField.getFullColor());
 
     }
 
@@ -256,6 +252,8 @@ public class Main {
             final int B = intCheck(colorInputs.get(COLORS.BLUE).getText());
             return new Color(R,G,B);
         }
+
+        public static HashMap<COLORS, InputField> getAllFields(){return colorInputs;}
     }
 
         private static class Column extends HashMap<UI_OBJECTS, Component> {
