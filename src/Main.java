@@ -82,22 +82,22 @@ public class Main {
         //ACTION LISTENERS-----------------------------
 
 
-        ((JButton) allItems.getItem(UI_OBJECTS.RANDOMIZE_BUTTON)).addActionListener(_ -> {
+        ((JButton) Objects.requireNonNull(allItems.getItem(UI_OBJECTS.RANDOMIZE_BUTTON))).addActionListener(_ -> {
             Random rand = new Random();
-            ((InputField) allItems.getItem(UI_OBJECTS.RED_INPUT)).setText(String.valueOf(rand.nextInt(256)));
-            ((InputField) allItems.getItem(UI_OBJECTS.GREEN_INPUT)).setText(String.valueOf(rand.nextInt(256)));
-            ((InputField) allItems.getItem(UI_OBJECTS.BLUE_INPUT)).setText(String.valueOf(rand.nextInt(256)));
+            ((InputField) Objects.requireNonNull(allItems.getItem(UI_OBJECTS.RED_INPUT))).setText(String.valueOf(rand.nextInt(256)));
+            ((InputField) Objects.requireNonNull(allItems.getItem(UI_OBJECTS.GREEN_INPUT))).setText(String.valueOf(rand.nextInt(256)));
+            ((InputField) Objects.requireNonNull(allItems.getItem(UI_OBJECTS.BLUE_INPUT))).setText(String.valueOf(rand.nextInt(256)));
 
             refresh(allItems);
 
         });
 
-        ((JCheckBox)allItems.getItem(UI_OBJECTS.COLORED_BGS_CHECKBOX)).addActionListener(_ -> refresh(allItems));
+        ((JCheckBox) Objects.requireNonNull(allItems.getItem(UI_OBJECTS.COLORED_BGS_CHECKBOX))).addActionListener(_ -> refresh(allItems));
 
-        ((InputField)allItems.getItem(UI_OBJECTS.RED_INPUT)).addActionListener(_->refresh(allItems));
-        ((InputField)allItems.getItem(UI_OBJECTS.GREEN_INPUT)).addActionListener(_->refresh(allItems));
-        ((InputField)allItems.getItem(UI_OBJECTS.BLUE_INPUT)).addActionListener(_->refresh(allItems));
-        ((JButton)allItems.getItem(UI_OBJECTS.SET_COLORS_BUTTON)).addActionListener(_->refresh(allItems));
+        ((InputField) Objects.requireNonNull(allItems.getItem(UI_OBJECTS.RED_INPUT))).addActionListener(_->refresh(allItems));
+        ((InputField) Objects.requireNonNull(allItems.getItem(UI_OBJECTS.GREEN_INPUT))).addActionListener(_->refresh(allItems));
+        ((InputField) Objects.requireNonNull(allItems.getItem(UI_OBJECTS.BLUE_INPUT))).addActionListener(_->refresh(allItems));
+        ((JButton) Objects.requireNonNull(allItems.getItem(UI_OBJECTS.SET_COLORS_BUTTON))).addActionListener(_->refresh(allItems));
 
 
 
@@ -108,23 +108,23 @@ public class Main {
     //used to make sure the user did not input any words or negatives into the RGB input
 
     private static void refresh(Column.AllColumns allItems){
-        final boolean coloredBGs = ((JCheckBox)allItems.getItem(UI_OBJECTS.COLORED_BGS_CHECKBOX)).isSelected();
+        final boolean coloredBGs = ((JCheckBox) Objects.requireNonNull(allItems.getItem(UI_OBJECTS.COLORED_BGS_CHECKBOX))).isSelected();
 
         if(!coloredBGs){
-            allItems.getItem(UI_OBJECTS.RED_INPUT).setBackground(Color.WHITE);
-            allItems.getItem(UI_OBJECTS.BLUE_INPUT).setBackground(Color.WHITE);
-            allItems.getItem(UI_OBJECTS.GREEN_INPUT).setBackground(Color.WHITE);
-            allItems.getItem(UI_OBJECTS.RED_INPUT).setForeground(Color.BLACK);
-            allItems.getItem(UI_OBJECTS.GREEN_INPUT).setForeground(Color.BLACK);
-            allItems.getItem(UI_OBJECTS.BLUE_INPUT).setForeground(Color.BLACK);
+            Objects.requireNonNull(allItems.getItem(UI_OBJECTS.RED_INPUT)).setBackground(Color.WHITE);
+            Objects.requireNonNull(allItems.getItem(UI_OBJECTS.BLUE_INPUT)).setBackground(Color.WHITE);
+            Objects.requireNonNull(allItems.getItem(UI_OBJECTS.GREEN_INPUT)).setBackground(Color.WHITE);
+            Objects.requireNonNull(allItems.getItem(UI_OBJECTS.RED_INPUT)).setForeground(Color.BLACK);
+            Objects.requireNonNull(allItems.getItem(UI_OBJECTS.GREEN_INPUT)).setForeground(Color.BLACK);
+            Objects.requireNonNull(allItems.getItem(UI_OBJECTS.BLUE_INPUT)).setForeground(Color.BLACK);
         }else{
-            ((InputField)allItems.getItem(UI_OBJECTS.RED_INPUT)).update();
-            ((InputField)allItems.getItem(UI_OBJECTS.GREEN_INPUT)).update();
-            ((InputField)allItems.getItem(UI_OBJECTS.BLUE_INPUT)).update();
+            ((InputField) Objects.requireNonNull(allItems.getItem(UI_OBJECTS.RED_INPUT))).update();
+            ((InputField) Objects.requireNonNull(allItems.getItem(UI_OBJECTS.GREEN_INPUT))).update();
+            ((InputField) Objects.requireNonNull(allItems.getItem(UI_OBJECTS.BLUE_INPUT))).update();
         }
 
-        ((ColorPreview)allItems.getItem(UI_OBJECTS.COLOR_PREVIEW_BOX)).setColor();
-        ((JLabel)allItems.getItem(UI_OBJECTS.COLOR_PREVIEW_TEXT)).setText("Color: "+InputField.getFullColor());
+        ((ColorPreview) Objects.requireNonNull(allItems.getItem(UI_OBJECTS.COLOR_PREVIEW_BOX))).setColor();
+        ((JLabel) Objects.requireNonNull(allItems.getItem(UI_OBJECTS.COLOR_PREVIEW_TEXT))).setText("Color: "+InputField.getFullColor());
 
     }
 
@@ -147,16 +147,6 @@ public class Main {
         }
 
         return out;
-    }
-
-    private static int intCheck(int input) {
-        if (input >= 256) {
-            input = 255;
-        } else if (input < 0) {
-            input = 0;
-        }
-
-        return input;
     }
 
     private static Color isDarkColor(Color color) {
@@ -251,16 +241,6 @@ public class Main {
             return color;
         }
 
-        public void update(int value) {
-            this.setText(Integer.toString(intCheck(value)));
-            System.out.println(COLOR_TYPE+" INTCHECK: "+intCheck(value));
-
-            if (coloredBGs) {
-                this.setForeground(isDarkColor(findColor()));
-                this.setBackground(findColor());
-            }
-        }
-
         public void update(){
             this.setText(Integer.toString(intCheck(this.getText())));
 
@@ -291,10 +271,6 @@ public class Main {
                     this.addAll(allColumnsTemp);
 
                     panel.addAllItems(this);
-                }
-
-                public AllColumns() {
-                    this.addAll(allColumnsTemp);
                 }
 
                 public Component getItem(UI_OBJECTS target) {
