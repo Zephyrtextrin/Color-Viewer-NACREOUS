@@ -187,13 +187,8 @@ public class Main {
 
         public void addAllItems(Column.AllColumns allItems) {
             int X = 0;
-            int Y = 0;
             for (Column col : allItems){
-                for(UIElement item:col){
-                    this.addObject(item.getBase(), X,Y);
-                    Y++;
-                }
-                Y = 0;
+                for(int i=0;i<col.size();i++){this.addObject(col.get(i).getBase(), X,i);} //use a regular for-loop here instead of an enchanced one because using an enchanced one overcomplicates things and requires you to make a seperate var for Y
                 X++;
             }
 
@@ -261,6 +256,7 @@ public class Main {
 
     /*this is more or less an overcomplicated hashmap. the reason i made this instead of a hashmap is because hashmaps are an unsorted class,
     and it's rather important that the order of the items *stays sorted* because that determines the order that the items appear in on the ui.
+    note to self: im really tired maybe theres a more obvious solution for this i should look at this entire codebase again in the morning -8/5/2025 00:18
      */
     private static class Column extends ArrayList<UIElement> {
         private static final ArrayList<Column> allColumnsTemp = new ArrayList<>();
@@ -298,7 +294,6 @@ public class Main {
     }
 
 
-    //this whole UIElement shit feels like a bad idea. look at this again when not tired
     final private static class UIElement extends Component{
         final private Component base;
         final private UI_OBJECT tag;
