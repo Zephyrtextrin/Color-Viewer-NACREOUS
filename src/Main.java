@@ -5,7 +5,7 @@ import java.util.*;
 public class Main {
 
     private enum INT_CONSTANTS {
-        WINDOW_WIDTH(1200), WINDOW_HEIGHT(WINDOW_WIDTH.value / 2), DARK_COLOR(167);
+        WINDOW_WIDTH(1200), WINDOW_HEIGHT(WINDOW_WIDTH.value / 2), DARK_COLOR(190);
         public final int value;
 
         INT_CONSTANTS(int type) {
@@ -17,7 +17,7 @@ public class Main {
         RED, GREEN, BLUE, HEX
     }
 
-    private enum UI_OBJECTS {
+    private enum UI_OBJECT {
         COLOR_PREVIEW_BOX,
         COLOR_PREVIEW_TEXT,
         RED_INPUT,
@@ -26,7 +26,8 @@ public class Main {
         HEX_INPUT,
         RANDOMIZE_BUTTON,
         SET_COLORS_BUTTON,
-        COLORED_BGS_CHECKBOX
+        COLORED_BGS_CHECKBOX,
+        //HEX_TOGGLE
     }
 
     static boolean hexState = false; //is user in hex mode instead of rgb
@@ -56,34 +57,35 @@ public class Main {
         panel.setLayout(new GridBagLayout());
         frame.add(panel);
 
-        final Column column1 = new Column();
-
-        column1.put(UI_OBJECTS.COLOR_PREVIEW_BOX, new ColorPreview());
-        column1.put(UI_OBJECTS.COLOR_PREVIEW_TEXT, new JLabel("Preview"));
-
-        final Column column2 = new Column();
-
-        column2.put(UI_OBJECTS.RED_INPUT, new InputField(COLORS.RED));
-        column2.put(UI_OBJECTS.BLUE_INPUT, new InputField(COLORS.BLUE));
-        column2.put(UI_OBJECTS.GREEN_INPUT, new InputField(COLORS.GREEN));
-        column2.put(UI_OBJECTS.HEX_INPUT, new InputField(COLORS.HEX));
-
-        column2.put(UI_OBJECTS.SET_COLORS_BUTTON, new JButton("Set Colors"));
-        column2.put(UI_OBJECTS.RANDOMIZE_BUTTON, new JButton("Randomize"));
 
 
-        final Column column3 = new Column();
+        new Column(new UIElement[]{
+                new UIElement(UI_OBJECT.COLOR_PREVIEW_BOX, new ColorPreview()),
+                new UIElement(UI_OBJECT.COLOR_PREVIEW_TEXT, new JLabel("Preview"))
+        });
 
-        //column3.put(UI_OBJECTS.HEX_CHECKBOX, new JCheckBox("Enable/Disable hex input (This will override RGB values!)"));
-        column3.put(UI_OBJECTS.COLORED_BGS_CHECKBOX, new JCheckBox("Enable/Disabled colored backgrounds"));
+        new Column(new UIElement[]{
+                new UIElement(UI_OBJECT.RED_INPUT, new InputField(COLORS.RED)),
+                new UIElement(UI_OBJECT.BLUE_INPUT, new InputField(COLORS.BLUE)),
+                new UIElement(UI_OBJECT.GREEN_INPUT, new InputField(COLORS.GREEN)),
+                new UIElement(UI_OBJECT.HEX_INPUT, new InputField(COLORS.HEX)),
+
+                new UIElement(UI_OBJECT.SET_COLORS_BUTTON, new JButton("Set Colors")),
+                new UIElement(UI_OBJECT.RANDOMIZE_BUTTON, new JButton("Randomize"))
+        });
+
+
+        new Column(new UIElement[]{
+                new UIElement(UI_OBJECT.COLORED_BGS_CHECKBOX, new JCheckBox("Enable/Disabled colored backgrounds"))
+                //new UIElement(UI_OBJECT.HEX_CHECKBOX, new JCheckBox("Enable/Disable hex input (This will override RGB values!)"));
+        });
 
 
         final Column.AllColumns allItems = new Column.AllColumns(panel);
         final Collection<InputField> fields = InputField.getAllFields().values();
-        //ACTION LISTENERS-----------------------------
 
 
-        ((JButton) Objects.requireNonNull(allItems.getItem(UI_OBJECTS.RANDOMIZE_BUTTON))).addActionListener(_ -> {
+        ((JButton)Objects.requireNonNull(allItems.getItem(UI_OBJECT.RANDOMIZE_BUTTON))).addActionListener(_ -> {
             final Random rand = new Random();
             for(InputField currentField:fields){
                 currentField.setText(String.valueOf(rand.nextInt(256)));
@@ -97,8 +99,8 @@ public class Main {
             currentField.addActionListener(_->refresh(allItems));
         }
 
-        ((JButton)Objects.requireNonNull(allItems.getItem(UI_OBJECTS.SET_COLORS_BUTTON))).addActionListener(_->refresh(allItems));
-        ((JCheckBox)Objects.requireNonNull(allItems.getItem(UI_OBJECTS.COLORED_BGS_CHECKBOX))).addActionListener(_ -> refresh(allItems));
+        ((JButton)Objects.requireNonNull(allItems.getItem(UI_OBJECT.SET_COLORS_BUTTON))).addActionListener(_->refresh(allItems));
+        ((JCheckBox)Objects.requireNonNull(allItems.getItem(UI_OBJECT.COLORED_BGS_CHECKBOX))).addActionListener(_ -> refresh(allItems));
 
         panel.repaint();
         panel.revalidate();
@@ -107,7 +109,7 @@ public class Main {
     //used to make sure the user did not input any words or negatives into the RGB input
 
     private static void refresh(Column.AllColumns allItems){
-        final boolean coloredBGs = ((JCheckBox)Objects.requireNonNull(allItems.getItem(UI_OBJECTS.COLORED_BGS_CHECKBOX))).isSelected();
+        final boolean coloredBGs = ((JCheckBox)Objects.requireNonNull(allItems.getItem(UI_OBJECT.COLORED_BGS_CHECKBOX))).isSelected();
         final Collection<InputField> fields = InputField.getAllFields().values();
 
         if(!coloredBGs){
@@ -119,11 +121,12 @@ public class Main {
             for(InputField currentField:fields){currentField.update();}
         }
 
-        ((ColorPreview)Objects.requireNonNull(allItems.getItem(UI_OBJECTS.COLOR_PREVIEW_BOX))).setColor();
-        ((JLabel)Objects.requireNonNull(allItems.getItem(UI_OBJECTS.COLOR_PREVIEW_TEXT))).setText("Color: "+InputField.getFullColor());
+        ((ColorPreview)Objects.requireNonNull(allItems.getItem(UI_OBJECT.COLOR_PREVIEW_BOX))).setColor();
+        ((JLabel)Objects.requireNonNull(allItems.getItem(UI_OBJECT.COLOR_PREVIEW_TEXT))).setText("Color: "+InputField.getFullColor());
 
     }
 
+    //checks to make sure user didnt include strings or negative ints
     private static int intCheck(String input) {
         boolean valid = true;
         int out = 0;
@@ -148,10 +151,10 @@ public class Main {
     private static Color isDarkColor(Color color) {
         int R = color.getRed();
         int G = color.getGreen();
-        int B = color.getBlue();
+        //B value isnt included here because i found even with 255 blue it was still kinda hard to see with black text, so B should always be white
         int darkThreshold = INT_CONSTANTS.DARK_COLOR.value;
 
-        if (R < darkThreshold && G < darkThreshold && B < darkThreshold) {
+        if (R< darkThreshold && G <darkThreshold) {
             return Color.WHITE;
         } else {
             return Color.BLACK;
@@ -186,9 +189,8 @@ public class Main {
             int X = 0;
             int Y = 0;
             for (Column col : allItems){
-                final Collection<Component> currentColItems = col.values();
-                for (Component component : currentColItems) {
-                    this.addObject(component, X, Y);
+                for(UIElement item:col){
+                    this.addObject(item.getBase(), X,Y);
                     Y++;
                 }
                 Y = 0;
@@ -230,7 +232,7 @@ public class Main {
                 case RED -> new Color(value, 0, 0);
                 case GREEN -> new Color(0, value, 0);
                 case BLUE -> new Color(0, 0, value);
-                case HEX -> new Color(value, value, value); //placeholder
+                case HEX -> new Color(value, value, value); //placeholder hex is unfinished
             };
 
             this.setForeground(isDarkColor(color));
@@ -256,29 +258,57 @@ public class Main {
         public static HashMap<COLORS, InputField> getAllFields(){return colorInputs;}
     }
 
-        private static class Column extends HashMap<UI_OBJECTS, Component> {
-            private static final ArrayList<Column> allColumnsTemp = new ArrayList<>();
 
-            private Column() {
-                allColumnsTemp.add(this);
+    /*this is more or less an overcomplicated hashmap. the reason i made this instead of a hashmap is because hashmaps are an unsorted class,
+    and it's rather important that the order of the items *stays sorted* because that determines the order that the items appear in on the ui.
+     */
+    private static class Column extends ArrayList<UIElement> {
+        private static final ArrayList<Column> allColumnsTemp = new ArrayList<>();
+
+        private Column(UIElement[] base){
+            this.addAll(Arrays.asList(base));
+            allColumnsTemp.add(this);
+        }
+
+
+        private Component get(UI_OBJECT value){
+            for(UIElement component:this){
+                if(component.getTag().equals(value)){return component.getBase();}
+            }
+            return null;
+        }
+
+        final private static class AllColumns extends ArrayList<Column> {
+
+            public AllColumns(MainPanel panel) {
+                this.addAll(allColumnsTemp);
+
+                panel.addAllItems(this);
             }
 
-            final static class AllColumns extends ArrayList<Column> {
-
-                public AllColumns(MainPanel panel) {
-                    this.addAll(allColumnsTemp);
-
-                    panel.addAllItems(this);
-                }
-
-                public Component getItem(UI_OBJECTS target) {
-                    for (Column currentCol : this) {
-                        if (currentCol.get(target) != null) {
-                            return currentCol.get(target);
-                        }
+            public Component getItem(UI_OBJECT target) {
+                for (Column currentCol : this) {
+                    if (currentCol.get(target) != null) {
+                        return currentCol.get(target);
                     }
-                    return null;
                 }
+                return null;
             }
+        }
+    }
+
+
+    //this whole UIElement shit feels like a bad idea. look at this again when not tired
+    final private static class UIElement extends Component{
+        final private Component base;
+        final private UI_OBJECT tag;
+
+        private UIElement(UI_OBJECT tag, Component base){
+            this.base = base;
+            this.tag = tag;
+        }
+
+        private Component getBase(){return base;}
+        private UI_OBJECT getTag(){return tag;}
     }
 }
